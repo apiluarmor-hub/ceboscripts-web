@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CeboScripts DELT4 — Script Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0708;
+            --bg-2: #120a0b;
+            --panel: rgba(24, 14, 15, 0.72);
+            --panel-solid: #160d0e;
+            --border: rgba(229, 57, 53, 0.18);
+            --border-strong: rgba(229, 57, 53, 0.45);
+            --red: #e53935;
+            --red-bright: #ff3b30;
+            --red-soft: #ff6b5e;
+            --text: #f5eceb;
+            --muted: #9a8c8c;
+            --radius: 18px;
+            --shadow: 0 24px 60px -20px rgba(0,0,0,0.8);
+            --glow: 0 0 0 1px var(--border-strong), 0 0 28px -6px rgba(229,57,53,0.5);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(229,57,53,0.18), transparent 60%),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(229,57,53,0.08), transparent 55%),
+                var(--bg);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1,h2,h3,.logo,.mode-title { font-family: 'Space Grotesk', sans-serif; }
+
+        #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        #glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(229,57,53,0.10), transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255,59,48,0.08), transparent 45%);
+            animation: floatGlow 14s ease-in-out infinite alternate;
+        }
+        @keyframes floatGlow { to { transform: translateY(-18px) scale(1.05); } }
+
+        .container {
+            position: relative; z-index: 2;
+            max-width: 860px; margin: 0 auto;
+            padding: 2.5rem 1.1rem 4rem;
+        }
+
+        /* ===== HEADER / HERO ===== */
+        .header { text-align: center; margin-bottom: 2.5rem; position: relative; }
+        .brand-logo {
+            width: 110px; height: auto; display: block; margin: 0 auto 1rem;
+            border-radius: 24px;
+            filter: drop-shadow(0 14px 30px rgba(229,57,53,0.55));
+            animation: logoIn 0.7s cubic-bezier(.2,.8,.2,1);
+        }
+        @keyframes logoIn { from { opacity:0; transform: translateY(-14px) scale(.9);} to {opacity:1;transform:none;} }
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 14px; border-radius: 999px;
+            background: rgba(229,57,53,0.12);
+            border: 1px solid var(--border-strong);
+            font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--red-soft);
+            margin-bottom: 1rem;
+        }
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--red-bright);
+            box-shadow: 0 0 0 0 rgba(229,57,53,0.7); animation: pulse 1.6s infinite;
+        }
+        @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(229,57,53,0.6);} 70%{box-shadow:0 0 0 10px rgba(229,57,53,0);} 100%{box-shadow:0 0 0 0 rgba(229,57,53,0);} }
+        .logo {
+            font-size: clamp(2.8rem, 9vw, 4.6rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em;
+            background: linear-gradient(120deg, #fff 0%, #ffb3ad 45%, var(--red-bright) 100%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 60px rgba(229,57,53,0.35);
+            position: relative; display: inline-block;
+        }
+        .logo::after {
+            content: ""; display: block; height: 3px; width: 64%;
+            margin: 12px auto 0; border-radius: 999px;
+            background: linear-gradient(90deg, transparent, var(--red-bright), transparent);
+            box-shadow: 0 0 18px rgba(229,57,53,0.6);
+        }
+
+        /* ===== BURBUJAS ===== */
+        .burbujas-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 1.2rem;
+            padding: 0 0.5rem;
+        }
+        .burbuja {
+            background: rgba(229, 57, 53, 0.08);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 18px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--red-soft);
+            transition: all 0.15s ease;
+            cursor: default;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .burbuja:hover {
+            background: rgba(229, 57, 53, 0.16);
+            border-color: var(--border-strong);
+            transform: translateY(-2px);
+        }
+        .burbuja.pregunta {
+            color: var(--text);
+            border-color: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .burbuja.pregunta:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .burbuja.respuesta {
+            color: var(--red-soft);
+            border-color: var(--border-strong);
+            background: rgba(229, 57, 53, 0.06);
+        }
+        .burbuja.respuesta:hover {
+            background: rgba(229, 57, 53, 0.14);
+        }
+
+        /* ===== SCRIPTS ===== */
+        .scripts-section {
+            margin-top: 2.5rem;
+        }
+        .scripts-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            text-align: center;
+            background: linear-gradient(120deg, #fff 0%, #ffb3ad 45%, var(--red-bright) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(229, 57, 53, 0.25);
+            margin-bottom: 1.5rem;
+        }
+        .scripts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .script-card {
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            padding: 1.5rem;
+            text-align: left;
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+        .script-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-strong);
+            box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.9), 0 0 40px -10px rgba(229, 57, 53, 0.35);
+        }
+        .script-head {
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+        }
+        .script-image-wrap {
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border-strong);
+            background: #000;
+            box-shadow: 0 10px 30px -15px rgba(229, 57, 53, 0.5);
+        }
+        .script-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .script-card:hover .script-image {
+            transform: scale(1.1);
+        }
+        .script-name {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .code-row {
+            margin-top: 1.2rem;
+            display: flex;
+            align-items: stretch;
+            gap: 0.75rem;
+        }
+        .code-box {
+            flex: 1;
+            min-width: 0;
+            background: #0a0505;
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            box-shadow: inset 0 0 20px rgba(229, 57, 53, 0.08);
+            scrollbar-width: thin;
+            scrollbar-color: var(--red) transparent;
+        }
+        .code-box::-webkit-scrollbar {
+            height: 6px;
+        }
+        .code-box::-webkit-scrollbar-thumb {
+            background: var(--red);
+            border-radius: 999px;
+        }
+        .code-text {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.88rem;
+            color: #f2e6e5;
+            white-space: nowrap;
+        }
+        .copy-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--text);
+            padding: 0 1.1rem;
+            background: linear-gradient(135deg, rgba(229, 57, 53, 0.25), rgba(229, 57, 53, 0.08));
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(135deg, rgba(229, 57, 53, 0.4), rgba(229, 57, 53, 0.15));
+            box-shadow: 0 8px 24px -8px rgba(229, 57, 53, 0.6);
+        }
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ===== DISCORD CORNER ===== */
+        .discord-corner {
+            position: fixed; top: 18px; right: 18px; z-index: 50;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .discord-corner .user-info { display: flex; align-items: center; gap: 8px; }
+        .discord-corner .user-info .avatar-small { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--red); }
+        .username-text { font-size: 0.85rem; font-weight: 600; }
+        .discord-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 16px; border-radius: 12px; cursor: pointer;
+            border: 1px solid var(--border-strong);
+            background: linear-gradient(135deg, #e53935, #7a1410);
+            color: #fff; font-family: 'Inter',sans-serif; font-size: 0.82rem; font-weight: 600;
+            box-shadow: 0 8px 22px -8px rgba(229,57,53,0.7);
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .discord-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -8px rgba(229,57,53,0.9); }
+        .discord-btn svg { width: 18px; height: 18px; }
+        .discord-btn.verified { background: linear-gradient(135deg,#1e1112,#160d0e); border-color: var(--border); }
+        .discord-btn.verified:hover { transform: translateY(-2px); }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--border-strong);
+            color: var(--text);
+            padding: 0.85rem 1.25rem;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-family: "Inter", sans-serif;
+            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.9), 0 0 30px -8px rgba(229, 57, 53, 0.5);
+            animation: toastIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 14px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 1.5rem 0.9rem 3rem; }
+            .card-body { padding: 1.2rem; }
+            .brand-logo { width: 104px; }
+            .logo { font-size: 2.6rem; }
+            .tagline { font-size: 0.9rem; }
+            .discord-corner { top: 12px; right: 12px; }
+            .discord-btn { padding: 7px 12px; font-size: 0.74rem; }
+            .discord-btn svg { width: 16px; height: 16px; }
+            .username-text { display: none; }
+            .code-row {
+                flex-direction: column;
+            }
+            .copy-btn {
+                padding: 0.7rem 1.1rem;
+                justify-content: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="stars"></div>
+<div id="glow"></div>
+
+<div class="discord-corner" id="discordCorner">
+    <button class="discord-btn" id="discordBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        <span id="discordBtnText">Discord</span>
+    </button>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div class="live-badge"><span class="live-dot"></span><span>CEBOLLITA</span><span style="color: rgba(229,57,53,0.5);">·</span><span>ALL SCRIPTS</span></div>
+        <div class="logo">CeboScripts DELT4</div>
+
+        <!-- BURBUJAS -->
+        <div class="burbujas-container">
+            <span class="burbuja pregunta">⭐ EXCELENTES SCRIPTS</span>
+            <span class="burbuja respuesta">🔥 MUY RÁPIDOS</span>
+            <span class="burbuja pregunta">💯 100% FUNCIONAL</span>
+            <span class="burbuja respuesta">🚀 LOS MEJORES</span>
+            <span class="burbuja pregunta">⚡ AUTOMÁTICO</span>
+            <span class="burbuja respuesta">🎯 PRECISIÓN TOTAL</span>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <section class="scripts-section">
+        <h2 class="scripts-section-title">ALL SCRIPTS</h2>
+        <div class="scripts-list">
+            <article class="script-card">
+                <div class="script-head">
+                    <div class="script-image-wrap">
+                        <img class="script-image" src="https://files.catbox.moe/qxc1bj.png" alt="ZL-PVP" loading="lazy" />
+                    </div>
+                    <h3 class="script-name">ZL-PVP</h3>
+                </div>
+                <div class="code-row">
+                    <div class="code-box">
+                        <code class="code-text">loadstring(game:HttpGet("https://raw.githubusercontent.com/xspeedHub1/Zlhub/refs/heads/main/ZLPVPreview.lua"))()</code>
+                    </div>
+                    <button type="button" class="copy-btn" data-copy aria-label="Copiar código de ZL-PVP">
+                        <span aria-hidden="true">📄</span> Copy
+                    </button>
+                </div>
+            </article>
+            <article class="script-card">
+                <div class="script-head">
+                    <div class="script-image-wrap">
+                        <img class="script-image" src="https://files.catbox.moe/9x2n9k.png" alt="ACE CODE SNIPER" loading="lazy" />
+                    </div>
+                    <h3 class="script-name">ACE CODE SNIPER</h3>
+                </div>
+                <div class="code-row">
+                    <div class="code-box">
+                        <code class="code-text">loadstring(game:HttpGet("https://raw.githubusercontent.com/xspeedHub1/AutoCode/refs/heads/main/.lua"))()</code>
+                    </div>
+                    <button type="button" class="copy-btn" data-copy aria-label="Copiar código de ACE CODE SNIPER">
+                        <span aria-hidden="true">📄</span> Copy
+                    </button>
+                </div>
+            </article>
+            <article class="script-card">
+                <div class="script-head">
+                    <div class="script-image-wrap">
+                        <img class="script-image" src="https://files.catbox.moe/uik1ax.png" alt="TRIDENTS DUELS" loading="lazy" />
+                    </div>
+                    <h3 class="script-name">TRIDENTS DUELS</h3>
+                </div>
+                <div class="code-row">
+                    <div class="code-box">
+                        <code class="code-text">loadstring(game:HttpGet("https://raw.githubusercontent.com/apiluarmor-hub/TridentDuels/refs/heads/main/.lua"))()</code>
+                    </div>
+                    <button type="button" class="copy-btn" data-copy aria-label="Copiar código de TRIDENTS DUELS">
+                        <span aria-hidden="true">📄</span> Copy
+                    </button>
+                </div>
+            </article>
+            <article class="script-card">
+                <div class="script-head">
+                    <div class="script-image-wrap">
+                        <img class="script-image" src="https://files.catbox.moe/kdrn80.png" alt="ADMIN PANEL" loading="lazy" />
+                    </div>
+                    <h3 class="script-name">ADMIN PANEL</h3>
+                </div>
+                <div class="code-row">
+                    <div class="code-box">
+                        <code class="code-text">loadstring(game:HttpGet("https://raw.githubusercontent.com/apiluarmor-hub/ApCeboScript/refs/heads/main/.Lua"))()</code>
+                    </div>
+                    <button type="button" class="copy-btn" data-copy aria-label="Copiar código de ADMIN PANEL">
+                        <span aria-hidden="true">📄</span> Copy
+                    </button>
+                </div>
+            </article>
+            <article class="script-card">
+                <div class="script-head">
+                    <div class="script-image-wrap">
+                        <img class="script-image" src="https://files.catbox.moe/3unm6s.png" alt="FLASH AND BLOCK" loading="lazy" />
+                    </div>
+                    <h3 class="script-name">FLASH AND BLOCK</h3>
+                </div>
+                <div class="code-row">
+                    <div class="code-box">
+                        <code class="code-text">loadstring(game:HttpGet("https://raw.githubusercontent.com/apiluarmor-hub/Flash-and-Block/refs/heads/main/CeboScripts"))()</code>
+                    </div>
+                    <button type="button" class="copy-btn" data-copy aria-label="Copiar código de FLASH AND BLOCK">
+                        <span aria-hidden="true">📄</span> Copy
+                    </button>
+                </div>
+            </article>
+        </div>
+    </section>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" style="display:none"></div>
+
+<script>
+    const discordBtn = document.getElementById('discordBtn');
+    discordBtn.onclick = () => { window.open('https://discord.gg/R98RUQ9UH','_blank'); };
+
+    (function() {
+        const stars = document.getElementById('stars');
+        for (let i = 0; i < 120; i++) {
+            const star = document.createElement('div');
+            const size = Math.random() * 2.5 + 0.5;
+            star.style.position = 'absolute';
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.background = 'white';
+            star.style.borderRadius = '50%';
+            star.style.opacity = Math.random() * 0.5 + 0.2;
+            star.style.animation = 'twinkle ' + (Math.random() * 4 + 2) + 's infinite alternate';
+            stars.appendChild(star);
+        }
+    })();
+
+    const style = document.createElement('style');
+    style.textContent = `@keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 0.8; } }`;
+    document.head.appendChild(style);
+
+    // Toast para copiar
+    (function () {
+        var toast = document.getElementById("toast");
+        var timer;
+        function show(msg) {
+            toast.textContent = msg;
+            toast.style.display = "block";
+            clearTimeout(timer);
+            timer = setTimeout(function () { toast.style.display = "none"; }, 2500);
+        }
+        document.querySelectorAll("[data-copy]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var code = btn.closest(".code-row").querySelector(".code-text").textContent;
+                navigator.clipboard.writeText(code).then(
+                    function () { show("Script copiado correctamente."); },
+                    function () { show("No se pudo copiar el script."); }
+                );
+            });
+        });
+    })();
+</script>
+</body>
+</html>
